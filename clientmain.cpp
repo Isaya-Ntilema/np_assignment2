@@ -117,10 +117,6 @@ freeaddrinfo(res);
               return 0;
        }
      
-     //This is for making pause for testing
-// printf("For Pausing\n"); 
-// char str[20];
-// scanf("%s",str);
 
        // Polling mechanism for 2s timeout maximom 2 times
        struct pollfd pfd[1];
