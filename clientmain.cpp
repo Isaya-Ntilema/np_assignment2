@@ -117,7 +117,6 @@ freeaddrinfo(res);
               return 0;
        }
      
-
        // Polling mechanism for 2s timeout maximom 2 times
        struct pollfd pfd[1];
        pfd[0].fd = sockfd;
@@ -163,7 +162,6 @@ freeaddrinfo(res);
                    }
 
        /// End of polling mechanism, if didn't return and program is here, then server has replied, so klet's read the response
-
  //Struct calcProtocol
        struct calcProtocol prot = {0};
        // Receiving Calcprotocol
@@ -175,7 +173,7 @@ freeaddrinfo(res);
               return 0;
        }
      
-       // For My debug
+       // For debug
        //     printf("\nn=%d bytes read\n",n);
     if (n == sizeof(calcMessage))
     {
@@ -189,7 +187,7 @@ freeaddrinfo(res);
               return 0;
        }
     }
-       // For my debug
+       // For debug
 
            printf("\nServer Protocol:\n");
            printf("\ntype %d",ntohs(prot.type));
@@ -268,11 +266,6 @@ freeaddrinfo(res);
         prot.type = htons(2);
         prot.major_version = htons(1);
         prot.minor_version = htons(0);
-
-//This is for making pause for testing
-//  printf("For Pausing\n"); 
-//  char str[20];
-//  scanf("%s",str);
      
        if (send(sockfd, &prot, sizeof(prot), 0) == -1)
        {
@@ -320,7 +313,6 @@ freeaddrinfo(res);
                      return 0;
                    }
 
-
        n = recv(sockfd, &message, sizeof(message), 0);
        if (n < 0)
        {
@@ -334,15 +326,6 @@ freeaddrinfo(res);
               return 0;
        }
 
-
-       // For my Debug
-       //      printf("\nn=%d bytes read\n",n);
-       //      printf("\nCalc Message:\n");
-       //      printf("\ntype %d",ntohs(message.type));
-       //      printf("\nprot %d",ntohs(message.protocol));
-       //      printf("\nmessage %d\n",ntohl(message.message));
-       //      printf("\nmajor_version %d",ntohs(message.major_version));
-       //      printf("\nminor_version %d\n",ntohs(message.minor_version));
        if (ntohl(message.message) == 1)
        {
               if (ntohl(prot.arith) == ADD || ntohl(prot.arith) == MUL || ntohl(prot.arith) == DIV || ntohl(prot.arith) == SUB)
