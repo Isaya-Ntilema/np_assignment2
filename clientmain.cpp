@@ -183,9 +183,7 @@ freeaddrinfo(res);
               printf("\n Error In Reading Prot Message From Server, n=%d bytes read, %d expected\n", n, 12);
               return 0;
        }
-
-       
-       
+     
        // For My debug
        //     printf("\nn=%d bytes read\n",n);
     if (n == sizeof(calcMessage))
