@@ -85,9 +85,6 @@ int main(int argc, char *argv[])
 break;
        }
 
-
-
-
        // Make connection to server
 
 if (connect(sockfd, p->ai_addr,p->ai_addrlen ) < 0)
