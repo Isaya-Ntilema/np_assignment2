@@ -191,14 +191,6 @@ freeaddrinfo(res);
        //This for checking if the server not suuport client
        memcpy(&message, &prot, sizeof(message));
 
-      // printf("The Message size is %d",strlen(prot));
-       //    printf("\nRCalc Message:\n");
-       //    printf("\nRtype %d",ntohs(message.type));
-       //    printf("\nRprot %d",ntohs(message.protocol));
-       //    printf("\nRmessage %d",ntohl(message.message));
-       //    printf("\nRmajor_version %d",ntohs(message.major_version));
-       //    printf("\nRminor_version %d\n",ntohs(message.minor_version));
-
        // checking  unsupprted protocol
        if (ntohs(message.type) == 2 && ntohl(message.message) == 2 && ntohs(message.major_version) == 1 && ntohs(message.minor_version) == 0)
        {
