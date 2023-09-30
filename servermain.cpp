@@ -66,8 +66,6 @@ printf("Int not found\n");
   return 1;
 }
 
-
-
 float ffind(int id) // NOT REMOVED
 {
   for (int i = 0; i < 100; i++)
