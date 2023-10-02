@@ -337,8 +337,6 @@ int main(int argc, char *argv[])
         clId[k].fr = fresult;
         clId[k].ir = iresult;
         clId[k].stime = time(&start);
-        //printf("the Ftime is %ld\n",time(&start));
-    
         
       }
       else
@@ -410,17 +408,12 @@ int main(int argc, char *argv[])
   else
   {
    printf("it is not calcmessage\n");
-
   
   res = find(ntohl(prot.id));
   fres = ffind(ntohl(prot.id));
     
-  //printf("The last is %ld\n",time(&currentTime));
-  //printf("The last is %ld\n",clId[ntohl(prot.id)].stime);
-
   double diff_time = double (time(&currentTime) - clId[ntohl(prot.id)].stime);
 
- // printf("The tOTALL left is %f\n",diff_time);
   if (diff_time >= 10)
   {
     clId[ntohl(prot.id)].die =1;
@@ -478,8 +471,7 @@ int main(int argc, char *argv[])
       continue;
     }
     
-  }
-    
+  }  
 
   } // while loop
   close(sockfd);
