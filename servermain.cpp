@@ -209,12 +209,10 @@ int main(int argc, char *argv[])
     struct calcProtocol prot = {0};
     struct calcMessage message = {0};
 
-
     addr_len = sizeof(their_addr);
     numbytes = recvfrom(sockfd, &prot, sizeof(prot), 0, (struct sockaddr *)&their_addr, &addr_len);
     //printf("The  P1 buffersize is %d\n",numbytes);
     
-   
     if (numbytes == -1)
     {
       printf("Errno == %d -- %s \n", errno, strerror(errno));
@@ -226,18 +224,6 @@ int main(int argc, char *argv[])
     myPort = ntohs(the_addr->sin_port);
 
     printf("Server: connecting to %s:%u\n", s, myPort);
-   
-
-    
-
-    // For My Debug
-    //         printf("\nRtype %d",ntohs(message.type));
-    //         printf("\nRprot %d",ntohs(message.protocol));
-    //         printf("\nRmessage %d",ntohl(message.message));
-    //         printf("\nRmajor_version %d",ntohs(message.major_version));
-    //         printf("\nRminor_version %d\n",ntohs(message.minor_version));
-
-    
 
     //Checking the message protocol
     //Check receiving Protocol 
