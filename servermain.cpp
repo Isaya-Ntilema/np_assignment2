@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
   unsigned int iresult;
   time_t currentTime , start;
 
-//Checking Argumnets
+//Checking Arguments
   if (argc != 2)
   {
     fprintf(stderr, "usage: %s IP server:Port", argv[0]);
@@ -204,8 +204,6 @@ int main(int argc, char *argv[])
   printf("listener: waiting to recvfrom...\n");
   while (1)
   {
-
-    
 
     printf("Waiting for connection...\n");
     struct calcProtocol prot = {0};
