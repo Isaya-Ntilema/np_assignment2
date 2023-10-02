@@ -82,7 +82,7 @@ printf("Float not found\n");
   return 1;
 }
 
-// Helper function you can use:
+// Helper function
 char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
 {
   switch (sa->sa_family)
@@ -116,7 +116,6 @@ void *get_in_addr(struct sockaddr *sa)
   return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 
-
 int sockfd;
 
 int main(int argc, char *argv[])
@@ -142,20 +141,20 @@ int main(int argc, char *argv[])
   unsigned int iresult;
   time_t currentTime , start;
 
-//Check Argumnets
+//Checking Argumnets
   if (argc != 2)
   {
     fprintf(stderr, "usage: %s IP server:Port", argv[0]);
     exit(1);
   }
   char s[INET6_ADDRSTRLEN];
- // char ip[INET6_ADDRSTRLEN];
-  // Making Ip and port seperated
+
+  // Separating IP and port
   char delim[] = ":";
   char *Desthost = strtok(argv[1], delim);
   char *Destport = strtok(NULL, delim);
 
-  /* Do magic chage string to int*/
+  /* change string to integer*/
   int port = atoi(Destport);
   printf("Host %s, and port %d.\n", Desthost, port);
 
@@ -183,7 +182,6 @@ int main(int argc, char *argv[])
       exit(1);
     }
 
-    
 //Binding
     if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
     {
@@ -203,12 +201,11 @@ int main(int argc, char *argv[])
 
   freeaddrinfo(servinfo);
   
-
   printf("listener: waiting to recvfrom...\n");
   while (1)
   {
 
-    //printf("The %d computer\n",id);
+    
 
     printf("Waiting for connection...\n");
     struct calcProtocol prot = {0};
