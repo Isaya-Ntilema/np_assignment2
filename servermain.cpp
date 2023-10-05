@@ -67,8 +67,6 @@ unsigned int find(int id)
   return 1;
 }
 
-
-///
 float ffind(int id) 
 
 {
