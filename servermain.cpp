@@ -220,9 +220,7 @@ fv2=randomFloat();
 							 		#ifdef DEBUG
 							 		printf("rounded off server answer : %8.8g\n",fr);						 		
 							 		#endif							 		
-							 		//using an if function, compare the result from client and server, and if equal, send ok to client ans close.
-							 		//client result is an array, convert to float.							 							 								 		
-									//if(strcmp(client_float_result,"f_result")==0)
+							 		//using an if function, compare the result from client and server
 									
 									char fr_result[20];
 									//double fr;
@@ -265,7 +263,7 @@ else
 		    bzero(opr_val, sizeof(opr_val));
 		    sprintf(opr_val, "%s %d %d\n",op,iv1,iv2);
 		    printf("%s %d %d\n",op,iv1,iv2);
-		        //sending operation and random float values achieved to client to use.
+		        //sending operation and random float values to the client
 		    	if(send(new_socket, opr_val, sizeof(opr_val), 0)==-1)
 						 		{
 						 		perror("failure sending operation and interger values to client\n");
@@ -288,7 +286,7 @@ else
 										exit(1);
 								 		}	
 								 		//prepare to compare the results from the client side with
-							 			//the result on the server side in string form							 			
+													 			
 									 		char server_response[] ="OK\n" ;
 									 		#ifdef DEBUG								 	
 									 		printf("rounded off server answer: %d\n",ir);
