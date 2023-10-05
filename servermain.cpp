@@ -1,466 +1,318 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <signal.h>
-#include "protocol.h"
-#include "poll.h"
-#include <calcLib.h>
-#include <signal.h>
-#include <sys/time.h>
+#include <stdio.h> 
+#include <string.h>  
+#include <unistd.h>    
+#include <arpa/inet.h>  
+#include <sys/time.h> 
+#include <calcLib.h>    
 #include <math.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <sys/time.h>
 #include <time.h>
+#define TRUE   1 
+#include <signal.h>
 
-#define MAXBUFLEN 1450
-
-//Structure for CLient
-struct clientId
+void handler(int signo)
 {
-  char *ip;
-  int port;
-  int die;
-  float id;
-  float fr;
-  unsigned int ir;
-  time_t stime;
-
-};
-
-struct clientId clId[100] = {0};
-
-int pfind(int id) // NOT REMOVED
-{
-  for (int i = 0; i < 100; i++)
-  {
-    struct clientId client = clId[i];
-
-    if (client.id == id)
-      //if (client.die != 1)
-      {
-        return clId[i].port;
-      }
-  }
-printf("Port not found");
-  return 1;
+  return;
 }
+   
+int main(int argc , char *argv[])  
+{   
+	char delim[]=":";
+  	char *Desthost=strtok(argv[1],delim);
+  	char *Destport=strtok(NULL,delim);
+  	struct addrinfo hints; 
+	struct addrinfo* res=0;
+	struct addrinfo *bob;
+	char addrstring[100];
+  	
+  	int port=atoi(Destport);
+	 
+ 	printf("Host %s, and port %d.\n",Desthost,port);	
 
-unsigned int find(int id) // NOT REMOVED
-{
-  for (int i = 0; i < 100; i++)
-  {
-    struct clientId client = clId[i];
+	int master_socket , addrlen , new_socket ; 
+ 	struct sockaddr_in address;  
+    char *ptr;
+	int n;
+	  
+	char buffer[1024];  // buffer set to 1K 
+         
+    //socket descriptors 
+	char message[] = "TEXT TCP 1.0\n\n";      
+    bzero(&hints, sizeof(hints));
+ 	hints.ai_family = 0; // AF_INET/6;
+	hints.ai_socktype=SOCK_STREAM; //SOCK_STREAM;, use 0 for both type
+  	hints.ai_protocol=0;
+  	hints.ai_flags = AI_ALL; //AI_CANONNAME;
+  	  while (--argc > 0) 
+  	  	{
+    		ptr = *++argv;   
+    		if ( (n  = getaddrinfo(ptr, "domain", &hints, &res) ) != 0) 
+    		{
+      		fprintf(stderr,"getaddrinfo error for host: %s: %s",ptr, gai_strerror(n));
+      		continue;
+    		}
+    	 	bob = res;
+		do 	{
+      			inet_ntop(bob->ai_family, &((struct sockaddr_in *)bob->ai_addr)->sin_addr,addrstring,100);
+      			#ifdef DEBUG 
+      			
+      			#endif
+     			bob = bob->ai_next;
+			} while (bob != NULL );
+  		}    	        		
+	int err=getaddrinfo(Desthost,Destport,&hints,&res);
+	if (err!=0) 
+		{
+    		perror("failed to resolve remote socket address...");
+    		exit(1);
+		}
+	    master_socket=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
+	if (master_socket==-1) 
+		{
+  		 perror("failed to create the socket\n");
+  		 exit(1);
+	  	}          
+    										//type of socket created 
+    address.sin_family =AF_UNSPEC;  
+    address.sin_addr.s_addr = INADDR_ANY;  
+    address.sin_port = htons( port );  
+         
+    										//bind the socket 
+	    if (bind(master_socket, (struct sockaddr *)&address, sizeof(address))<0)  
+			{  
+			perror("bind failed");  
+			exit(1);  
+	    	}  
+	   	 #ifdef DEBUG
+	   	 printf("Listening on port %d \n", port);  	
+		 #endif
+	    	//Setting up maximum connections for the master socket 
+	    if (listen(master_socket, 5) < 0)  
+	    	{  
+		perror("reject the sixth client");  
+		exit(1);  
+	    	}
+	    	else
+	    	{	  	   
+    		//Incoming connection 
+   		addrlen = sizeof(address);  
+		#ifdef DEBUG
+		printf("Waiting for connections ...");  
+		#endif 
+		}   
+	    while(1)  
+	    { 
 
-    if (client.id == id)
-     // if (client.die != 1)
-      {
-        return clId[i].ir;
-      }
-  }
-printf("Int not found\n");
-  return 1;
-}
+			struct sigaction sa;
+			sa.sa_handler = handler;
+			sigemptyset(&sa.sa_mask);
+			sa.sa_flags = 0;
+			sigaction(SIGALRM, &sa, NULL);
+			char ERROR[]="ERROR TO\n";
 
-float ffind(int id) // NOT REMOVED
-{
-  for (int i = 0; i < 100; i++)
-  {
-    struct clientId client = clId[i];
+  		{     					                       
+            if ((new_socket = accept(master_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)  
+            	{  
+                perror("accept error realised...");  
+                exit(6);  
+            	}              
+            #ifdef DEBUG							//informing user of socket name 
+            printf("New connection....\n");                    
+            #endif								
+            //sending protocol message to the server                        
+            	    int sen= send(new_socket, message, sizeof(message), 0);
+            	    if(sen ==-1)  
+		    	{  
+		        perror("sending protocol failure...");
+		        exit(1);   
+		    	}
+		    	else
+					{
+					#ifdef DEBUG		                       
+            		printf("%s\n",message);
+            		#endif
+            		}
+            		bzero(buffer, sizeof(buffer));          		 					
+            		
+				alarm(5);
+          		if(recv(new_socket, &buffer, sizeof(buffer), 0) > 0)          						
+				{
+				#ifdef DEBUG
+				printf("%s\n", buffer);				//printing the current received buffer message.	
+				#endif
+				alarm(0);	      
+			    }
+			    else
+			    	{
+			    	perror("no OK message from client, possibly protocol mismatch...");
+					printf("ERROR receiving from client, 5 sec delays\n");
+					send(new_socket, ERROR, sizeof(ERROR), 0);
+			    	exit(1);
+			    	}	
 
-    if (client.id == id)
-     // if (client.die != 1)
-      {
-        return clId[i].fr;
-      }
-  }
-printf("Float not found\n");
-  return 1;
-}
-
-// Helper function
-char *get_ip_str(const struct sockaddr *sa, char *s, size_t maxlen)
-{
-  switch (sa->sa_family)
-  {
-  case AF_INET:
-    inet_ntop(AF_INET, &(((struct sockaddr_in *)sa)->sin_addr),
-              s, maxlen);
-    break;
-
-  case AF_INET6:
-    inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)sa)->sin6_addr),
-              s, maxlen);
-    break;
-
-  default:
-    strncpy(s, "Unknown AF", maxlen);
-    return NULL;
-  }
-
-  return s;
-}
-
-// get sockaddr, IPv4 or IPv6:
-void *get_in_addr(struct sockaddr *sa)
-{
-  if (sa->sa_family == AF_INET)
-  {
-    return &(((struct sockaddr_in *)sa)->sin_addr);
-  }
-
-  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
-}
-
-int sockfd;
-
-int main(int argc, char *argv[])
-{
-
-  struct addrinfo hints, *servinfo, *p;
-  int rv;
-  float id = 1;
-  int k =1;
-  unsigned int res;
-  float fres;
-  int numbytes;
-  socklen_t addr_len;
-  struct sockaddr_storage their_addr;
-  struct sockaddr_in *the_addr;
-  char recvBuff[1024];
-  unsigned int myPort = 0 ;
-  initCalcLib();
-  char *ptr;
-  ptr = randomType();
-  double f1, f2, fresult;
-  int  i1, i2;
-  unsigned int iresult;
-  time_t currentTime , start;
-
-//Checking Arguments
-  if (argc != 2)
-  {
-    fprintf(stderr, "usage: %s IP server:Port", argv[0]);
-    exit(1);
-  }
-  char s[INET6_ADDRSTRLEN];
-
-  // Separating IP and port
-  char delim[] = ":";
-  char *Desthost = strtok(argv[1], delim);
-  char *Destport = strtok(NULL, delim);
-
-  /* change string to integer*/
-  int port = atoi(Destport);
-  printf("Host %s, and port %d.\n", Desthost, port);
-
-  // Clear buffer
-  memset(recvBuff, '0', sizeof(recvBuff));
-
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
-  hints.ai_socktype = SOCK_DGRAM;
-  hints.ai_flags = AI_PASSIVE; // use my IP
-
-  if ((rv = getaddrinfo(Desthost, Destport, &hints, &servinfo)) != 0)
-  {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-    return 1;
-  }
-
-  // loop through all the results and bind to the first we can
-  for (p = servinfo; p != NULL; p = p->ai_next)
-  {
-    if ((sockfd = socket(p->ai_family, p->ai_socktype,
-                         p->ai_protocol)) == -1)
-    {
-      perror("listener: socket");
-      exit(1);
-    }
-
-//Binding
-    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1)
-    {
-      close(sockfd);
-      perror("listener: bind");
-      continue;
-    }
-
-    break;
-  }
-
-  if (p == NULL)
-  {
-    fprintf(stderr, "listener: failed to bind socket\n");
-    return 2;
-  }
-
-  freeaddrinfo(servinfo);
-  
-  printf("listener: waiting to recvfrom...\n");
-  while (1)
-  {
-
-    printf("Waiting for connection...\n");
-    struct calcProtocol prot = {0};
-    struct calcMessage message = {0};
-
-    addr_len = sizeof(their_addr);
-    numbytes = recvfrom(sockfd, &prot, sizeof(prot), 0, (struct sockaddr *)&their_addr, &addr_len);
-    //printf("The  P1 buffersize is %d\n",numbytes);
-    
-    if (numbytes == -1)
-    {
-      printf("Errno == %d -- %s \n", errno, strerror(errno));
-    }
-
-    the_addr = (struct sockaddr_in *)&their_addr;
-  //Getting peer address
-    inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-    myPort = ntohs(the_addr->sin_port);
-
-    printf("Server: connecting to %s:%u\n", s, myPort);
-
-    //Checking the message protocol
-    //Check receiving Protocol 
-    if (numbytes == sizeof(calcMessage))
-    {
-      memcpy(&message, &prot, sizeof(message));
-      
-    if (ntohs(message.type) == 22 && ntohl(message.message) == 0 && ntohs(message.protocol) == 17 && ntohs(message.major_version) == 1 && ntohs(message.minor_version) == 0)
-
-       {
-      id ++;
-      k++;
-    initCalcLib();
-    char* ptr;
-    ptr = randomType();
-    i1 = randomInt();
-    i2 = randomInt();
-    //  printf("Float\t");
-    f1 = randomFloat();
-    f2 = randomFloat();
-
-    //printf("the ptr is %s",ptr);
-    printf("  Int Values: %d %d \n", i1, i2);
-    printf("Float Values: %8.8g %8.8g \n", f1, f2);
-    /* Act differently depending on what operator you got, judge type by first char in string. If 'f' then a float */
-
-    if (ptr[0] == 'f')
-    {
-      /* At this point, ptr holds operator, f1 and f2 the operands. Now we work to determine the reference result. */
-
-      if (strcmp(ptr, "fadd") == 0)
-      {
-        fresult = f1 + f2;
-        prot.arith = htonl(5);
-      }
-      else if (strcmp(ptr, "fsub") == 0)
-      {
-        fresult = f1 - f2;
-        prot.arith = htonl(6);
-      }
-      else if (strcmp(ptr, "fmul") == 0)
-      {
-        fresult = f1 * f2;
-        prot.arith = htonl(7);
-      }
-      else if (strcmp(ptr, "fdiv") == 0)
-      {
-        fresult = f1 / f2;
-        prot.arith = htonl(8);
-      }
-      printf("%s %8.8g %8.8g = %8.8g\n", ptr, f1, f2, fresult);
-    }
-    else
-    {
-      if (strcmp(ptr, "add") == 0)
-      {
-        iresult = i1 + i2;
-        prot.arith = htonl(1);
-      }
-      else if (strcmp(ptr, "sub") == 0)
-      {
-        iresult = i1 - i2;
-        prot.arith = htonl(2);
-      }
-      else if (strcmp(ptr, "mul") == 0)
-      {
-        iresult = i1 * i2;
-        prot.arith = htonl(3);
-      }
-      else if (strcmp(ptr, "div") == 0)
-      {
-        iresult = i1 / i2;
-        prot.arith = htonl(4);
-      }
-
-      printf("%s %d %d = %d \n", ptr, i1, i2, iresult);
-
-      printf("Prot id is %d\n", ntohl(prot.id));
-    }
-
-      if (ptr[0] == 'f')
-      {
-
-        prot.type = htons(1);
-        prot.major_version = htons(1);
-        prot.minor_version = htons(0);
-        prot.flValue1 = f1;
-        prot.flValue2 = f2;
-        prot.flResult = fresult;
-        prot.inValue1 = htons(i1);
-        prot.inValue2 = htons(i2);
-        prot.id = htonl(id);
-        prot.inResult = htonl(iresult);
-        clId[k].die = 0; 
-        clId[k].port = myPort;
-        clId[k].id = id;
-        clId[k].fr = fresult;
-        clId[k].ir = iresult;
-        clId[k].stime = time(&start);
+/* Initializing the library */
+initCalcLib();
+char *op; 
+char opr_val[256];
+op=randomType(); // Getting a random arithmetic operator. 
+double fv1,fv2,fresult;
+int iv1,iv2,iresult;
+iv1=randomInt();
+iv2=randomInt();
+fv1=randomFloat();
+fv2=randomFloat();
         
-      }
-      else
-      {
-        prot.type = htons(1);
-        prot.major_version = htons(1);
-        prot.minor_version = htons(0);
-        prot.inValue1 = htonl(i1);
-        prot.inValue2 = htonl(i2);
-        prot.inResult = htonl(iresult);
-        prot.flValue1 = f1;
-        prot.flValue2 = f2;
-        prot.id = htonl(id);
-        prot.flResult = fresult;
-        clId[k].die = 0; 
-        clId[k].port = myPort;
-        clId[k].id = id;
-        clId[k].ir = iresult;
-        clId[k].fr = fresult;
-        clId[k].stime = time(&start);
-        //printf("the Ftime is %ld\n",time(&start));
-      }
+  if(op[0]=='f'){
+      
+    if(strcmp(op,"fadd")==0){
+      fresult=fv1+fv2;
+    } else if (strcmp(op, "fsub")==0){
+      fresult=fv1-fv2;
+    } else if (strcmp(op, "fmul")==0){
+      fresult=fv1*fv2;
+    } else if (strcmp(op, "fdiv")==0){
+      fresult=fv1/fv2;
+    }   
+    	#ifdef DEBUG	
+     	printf("%s %8.8g %8.8g = %8.8g\n",op,fv1,fv2,fresult);
+     	#endif
+     	
+     	double fr = fresult;     	
+	fr = round(fr * 10000.0)/10000.0;
+	
+	bzero(opr_val, sizeof(opr_val));
+	sprintf(opr_val, "%s %8.8g %8.8g\n",op,fv1,fv2);
+	printf("%s %8.8g %8.8g\n",op,fv1,fv2);
+	    	//sending operation and random float values to the client
+	    	if(send(new_socket, opr_val, sizeof(opr_val), 0)<-1)
+				 		{
+				 		perror("failure sending operation and float values to client...");
+				 		exit(1);
+				 		}
+				 		else
+				 		{
+				 		#ifdef DEBUG
+				 		printf("sending operation and values successful\n");
+				 		#endif
+				 		}						
 
-      numbytes = sendto(sockfd, &prot, sizeof(prot), 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
-      if (numbytes < 0)
-      {
-        printf("\nP1  Error In Sending ");
-        continue;
-      }
-    }
-    else
-    //If the protocol is not supported by Server
-  
-    {
-      printf("The protocol not supported\n");
-      message.type = htons(2);
-      message.message = htonl(2);
-      message.protocol = htons(17);
-      message.major_version = htons(1);
-      message.minor_version = htons(0);
-
-      numbytes = sendto(sockfd, &message, sizeof(message), 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
-      if (numbytes < 0)
-      {
-        printf("\nP1  Error In Sending ");
-        continue;
-      }
-    }
-  // Polling mechanism for 10s
-   
-    struct pollfd pfd[1];
-    pfd[0].fd = sockfd;
-    pfd[0].events = POLLIN;
-    int ret = poll(pfd, 1, 10000);
-    if (ret == 0)
-    {
-      printf("P1 Time out....\n");
-      clId[k].die = 1 ;
-      continue;
-    }
-    else if (ret < 0)
-    {
-      printf("Error in connection !!!");
-    }
-   
-  }
-
-  //Checking Protocol Message
-  else
-  {
-   printf("it is not calcmessage\n");
-  
-  res = find(ntohl(prot.id));
-  fres = ffind(ntohl(prot.id));
-    
-  double diff_time = double (time(&currentTime) - clId[ntohl(prot.id)].stime);
-
-  if (diff_time >= 10)
-  {
-    clId[ntohl(prot.id)].die =1;
-  }
-
-
- if (((long)(prot.flResult*100) == (long)(fres*100)) || (ntohl(prot.inResult) == res))  // ghabli faghat decimal part bood hala baiad ta 2 ragham ashar ham dar nazar begire
-    {
-      printf("The result is Match\n");
-      printf("the dead is %d\n",clId[ntohl(prot.id)].die);
-      if ((clId[ntohl(prot.id)].id == ntohl(prot.id)) && (clId[ntohl(prot.id)].die == 0) && (clId[ntohl(prot.id)].port = myPort))
-      {
-        printf("it is ok , ID id %d\n", ntohl(prot.id));
-        message.message = htonl(1);
-        numbytes = sendto(sockfd, &message, sizeof(message), 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
-        if (numbytes < 0)
-        {
-          printf("\nP3  Error In Sending ");
-          continue;
-        }
-      }
-      else
-      {
-       message.type = htons(2);
-       message.message = htonl(2);
-       message.protocol = htons(17);
-       message.major_version = htons(1);
-       message.minor_version = htons(0);
-       numbytes = sendto(sockfd, &message, sizeof(message), 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
-        if (numbytes < 0)
-        {
-          printf("\nP3  Error In Sending ");
-          continue;
-        }
-
-        printf("ERROR Result\n");
-        continue;
-      }
-    }
-    
-    else
-    {
-      printf("The result is not ok\n");
-      message.type = htons(2);
-      message.message = htonl(2);
-      message.protocol = htons(17);
-      message.major_version = htons(1);
-      message.minor_version = htons(0);
-      numbytes = sendto(sockfd, &message, sizeof(message), 0, (struct sockaddr *)&their_addr, sizeof(their_addr));
-        if (numbytes < 0)
-        {
-          printf("\nP3  Error In Sending ");
-          continue;
-        }
-      continue;
-    }
-    
-  }  
-
-  } // while loop
-  close(sockfd);
-  return 0;
-
-} // Main
+					 		char client_float_result[256];
+					 		bzero(client_float_result, sizeof(client_float_result)); 
+							alarm(5);			
+							if(recv(new_socket, client_float_result, sizeof(client_float_result),0) >0)					 	
+							 	{
+															 	
+							 	printf("%s", client_float_result); 
+								
+								alarm(0);
+							 	}
+							 	else
+								 	{
+								 	perror("no message received from client..."); 
+									send(new_socket, ERROR, sizeof(ERROR), 0);
+			   						exit(1);
+			   						}							 	
+								 		//Comparing the results from the client side with the ones on the server
+								 
+							 		char server_response[] = "OK\n" ;
+							 		#ifdef DEBUG
+							 		printf("rounded off server answer : %8.8g\n",fr);						 		
+							 		#endif							 		
+							 		//using an if function, compare the result from client and server, and if equal, send ok to client ans close.
+							 		//client result is an array, convert to float.							 							 								 		
+									//if(strcmp(client_float_result,"f_result")==0)
+									
+									char fr_result[20];
+									//double fr;
+									sprintf(fr_result,"%8.8g",fr);
+									#ifdef DEBUG	
+									printf("%s\n", fr_result);
+									printf("%s\n",client_float_result);
+									#endif
+    									if (strncmp(fr_result, client_float_result, 0)==0)  
+    										{
+       									 	send(new_socket, server_response, sizeof(server_response), 0);
+       									 	printf("%s\n",server_response);
+       									 	} 
+ 									 	else
+ 									 	{										
+   										printf("Strings are unequal, hence no server response to the client\n"); 
+   										exit(1);   									
+   										}
+   										 					 								 								 							 					 		
+	}  
+else 
+ 	{		  		
+		    if(strcmp(op,"add")==0){
+		      iresult=iv1+iv2;
+		    } else if (strcmp(op, "sub")==0){
+		      iresult=iv1-iv2;
+		    } else if (strcmp(op, "mul")==0){
+		      iresult=iv1*iv2;
+		    } else if (strcmp(op, "div")==0){
+		      iresult=iv1/iv2;
+		    }
+		    #ifdef DEBUG
+		    printf("%s %d %d = %d \n",op,iv1,iv2,iresult);
+		    #endif
+		    //round of iresult to 5 digit number.
+		    int ir = iresult;
+     		    ir = round(ir * 10000.0)/10000.0;
+     		    //printf("%d\n",iresult);    
+		    //memset(opr_val, sizeof(opr_val), 0);
+		    bzero(opr_val, sizeof(opr_val));
+		    sprintf(opr_val, "%s %d %d\n",op,iv1,iv2);
+		    printf("%s %d %d\n",op,iv1,iv2);
+		        //sending operation and random float values achieved to client to use.
+		    	if(send(new_socket, opr_val, sizeof(opr_val), 0)==-1)
+						 		{
+						 		perror("failure sending operation and interger values to client\n");
+						 		exit(1);
+						 		}
+						 		char client_int_result[256];
+						 		bzero(client_int_result, sizeof(client_int_result));
+								alarm(5);
+						 		if(recv(new_socket, client_int_result, sizeof(client_int_result),0) >0)				 	
+								 		{
+																		 		
+										printf("%s", client_int_result); 
+										
+										alarm(0);
+								 		}
+										else
+								 		{
+								 		perror("no message received from client//client result\n"); 
+										send(new_socket, ERROR, sizeof(ERROR), 0);
+										exit(1);
+								 		}	
+								 		//prepare to compare the results from the client side with
+							 			//the result on the server side in string form							 			
+									 		char server_response[] ="OK\n" ;
+									 		#ifdef DEBUG								 	
+									 		printf("rounded off server answer: %d\n",ir);
+									 		#endif
+											char ir_result[20];
+											#ifdef DEBUG
+											sprintf(ir_result,"%d",ir);	
+											printf("%s\n", ir_result);
+											printf("%s\n",client_int_result);	
+											#endif
+												if (strncmp(ir_result, client_int_result, 0)==0)  
+		    											{
+		       									 	send(new_socket, server_response, sizeof(server_response), 0);
+		       									 	printf("%s\n",server_response);
+		       									 	} 
+		 									 	else
+		 									 	{
+		   										perror("Strings are unequal, hence no server response to the client\n"); 
+		   										exit(1);
+		   										}																   										  										    		    
+			} //end of arithmetic operation
+		}  
+printf("**************\n");
+close(new_socket);							
+	}//Terminating the while loop
+close(master_socket);
+} //end of main
