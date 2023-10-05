@@ -408,24 +408,18 @@ int main(int argc, char *argv[])
   //Checking Protocol Message
   else
   {
-   //printf("not a calcmessage\n");
-
-  
+   
   res = find(ntohl(protocols.id));
-  fres = ffind(ntohl(protocols.id));
-    
-  //printf("The last is %ld\n",time(&currentTime));
-  //printf("The last is %ld\n",clId[ntohl(prot.id)].stime);
+  fres = ffind(ntohl(protocols.id));  
 
-  //delay of 10 seconds , if no message from client terminate
+  //delay of 10 seconds, terminate if no message from client 
   double diff_time = double (time(&currentTime) - clId[ntohl(protocols.id)].stime);
 
   if (diff_time >= 10)
   {
-    //kills the connection and reject any infor  from this client
+    //kills the connection
     clId[ntohl(protocols.id)].die =1;
   }
-
 
  if (((long)(protocols.flResult*100) == (long)(fres*100)) || (ntohl(protocols.inResult) == res))  
     {
