@@ -254,18 +254,9 @@ int main(int argc, char *argv[])
     f1 = randomFloat();
     f2 = randomFloat();
 
-    //printf("the ptr is %s",ptr);
-
-    
-  ////printf("Integer Values: %d %d \n", i1, i2);
-  //// printf("Float Values: %8.8g %8.8g \n", f1, f2);
-
-
-    /* Act differently depending on what operator you got, judge type by first char in string. If 'f' then a float */
 
     if (ptr[0] == 'f')
     {
-      /* At this point, ptr holds operator, f1 and f2 the operands. Now we work to determine the reference result. */
 
       if (strcmp(ptr, "fadd") == 0)
       {
@@ -311,7 +302,7 @@ int main(int argc, char *argv[])
         iresult = i1 / i2;
         protocols.arith = htonl(4);
       }
-      //print id in order of a operation , the rnadom number of typ float or integer then result
+      //printing id in the order of an operation
       printf("operation - numbers - result - %s %d %d = %d \n", ptr, i1, i2, iresult);
 
       printf("Prot id is %d\n", ntohl(protocols.id));
@@ -337,7 +328,6 @@ int main(int argc, char *argv[])
         clId[k].ir = iresult;
         clId[k].stime = time(&start);
         //printf("the Ftime is %ld\n",time(&start));
-    
         
       }
       else
@@ -412,7 +402,7 @@ int main(int argc, char *argv[])
   res = find(ntohl(protocols.id));
   fres = ffind(ntohl(protocols.id));  
 
-  //delay of 10 seconds, terminate if no message from client 
+  //delay for 10 seconds, terminate if no message from client 
   double diff_time = double (time(&currentTime) - clId[ntohl(protocols.id)].stime);
 
   if (diff_time >= 10)
